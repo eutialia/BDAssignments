@@ -22,7 +22,7 @@ class SimilarityJoin:
     def verification(self, cand_df, threshold):
         jaccard = []
         for joinKey1, joinKey2 in zip(cand_df['joinKey1'], cand_df['joinKey2']):
-            jaccard_similarity = len(set(joinKey1) & set(joinKey2)) / len(set(joinKey1) | set(joinKey2)) if len(set(joinKey1) | set(joinKey2)) > 0 or 0
+            jaccard_similarity = len(set(joinKey1) & set(joinKey2)) / len(set(joinKey1) | set(joinKey2)) if len(set(joinKey1) | set(joinKey2)) > 0 else 0
             jaccard.append(jaccard_similarity)
         cand_df['jaccard'] = jaccard
         result_df = cand_df.query(f'jaccard >= {threshold}')
