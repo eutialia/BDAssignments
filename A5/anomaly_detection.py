@@ -1,5 +1,5 @@
 import pandas as pd
-
+from sklearn.cluster import KMeans
 
 class AnomalyDetection():
     def __init__(self):
@@ -16,14 +16,18 @@ class AnomalyDetection():
         return df
 
     def cat2Num(self, df, indices):
-        # tokens = ['http', 'ftp', 'udt', 'udf', 'tcp', 'icmp'] # same sequence as example
-        tokens = list(filter(lambda x: type(x) is str, df.explode('features')['features'].unique()))
+        tokens = ['http', 'ftp', 'udt', 'udf', 'tcp', 'icmp'] # same sequence as example for testing purpose
+        # tokens = list(filter(lambda x: type(x) is str, df.explode('features')['features'].unique()))
         encoder = dict((keys, values) for values, keys in enumerate(tokens))
         df['features'] = df['features'].apply(self.encode, args=(indices, encoder,)).apply(self.insert, args=(indices, tokens,))
         return df
 
     def detect(self, df, k, t):
-        pass
+        df['score'] = KMeans(n_clusters=k, random_state=0).fit_predict(df['features'].to_list())
+        n_max = df.groupby('score', as_index=False).count().max().features
+        n_min = df.groupby('score', as_index=False).count().min().features
+        df['score'] = df['score'].apply(lambda x: (n_max - x) / (n_max - n_min))
+        return df.query('score >= @t')
 
     def encode(self, data, indices, encoder):
         for i in indices:
@@ -56,5 +60,5 @@ if __name__ == "__main__":
     df2 = ad.scaleNum(df1, [6])
     print(df2)
 
-    df3 = ad.detect(df2, 8, 0.97)
+    df3 = ad.detect(df2, 2, 0.9)
     print(df3)
