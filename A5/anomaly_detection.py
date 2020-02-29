@@ -26,8 +26,7 @@ class AnomalyDetection():
         df['score'] = KMeans(n_clusters=k, random_state=0).fit_predict(df['features'].to_list())
         n_max = df.groupby('score', as_index=False).count().max().features
         n_min = df.groupby('score', as_index=False).count().min().features
-        group_dict = df.groupby('score', as_index=False).count().features.to_dict()
-        df['score'] = df['score'].apply(lambda x: group_dict[x]).apply(lambda n_x: (n_max - n_x) / (n_max - n_min))
+        df['score'] = df['score'].apply(lambda x: (n_max - x) / (n_max - n_min))
         return df.query('score >= @t')
 
     def encode(self, data, indices, encoder):
